@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef, Suspense } from "react";
+import React, { useState, useRef, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { addDoc, collection, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, updateDoc, increment, getDocs, query, where } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -13,7 +13,7 @@ import { RichTextEditor } from "@/components/editor/RichTextEditor";
 import { Image, Paperclip, X, ChevronDown } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { getFileIcon } from "@/lib/utils";
-import type { Attachment } from "@/lib/types";
+import type { Attachment, Group } from "@/lib/types";
 
 function WritePageInner() {
   const router = useRouter();
@@ -25,14 +25,24 @@ function WritePageInner() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [groupId] = useState(preselectedGroupId);
-  const [groupName] = useState(preselectedGroupName);
+  const [groupId, setGroupId] = useState(preselectedGroupId);
+  const [groupName, setGroupName] = useState(preselectedGroupName);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
   const [attachments, setAttachments] = useState<{ file: File; name: string; size: number; type: string }[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState("");
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, "groups"), where("memberIds", "array-contains", user.uid));
+    getDocs(q).then((snap) => {
+      setGroups(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Group));
+    });
+  }, [user]);
 
   const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -130,17 +140,44 @@ function WritePageInner() {
       />
 
       <div className="px-4 py-4 flex flex-col gap-4">
-        {!groupId && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700">
-            Please go to a group first and tap &quot;Write&quot; to create a post in that group.
+        {!groupId ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <p className="text-sm text-amber-700 mb-3">Select a group to post to:</p>
+            <div className="flex flex-col gap-2">
+              {groups.length === 0 ? (
+                <p className="text-sm text-amber-600">No groups yet. Join or create a group first.</p>
+              ) : (
+                groups.map((group) => (
+                  <button
+                    key={group.id}
+                    onClick={() => {
+                      setGroupId(group.id);
+                      setGroupName(group.name);
+                    }}
+                    className="text-left bg-white border border-amber-200 rounded-lg px-3 py-2 hover:bg-amber-50 transition"
+                  >
+                    <p className="text-sm font-medium text-stone-800">{group.name}</p>
+                    <p className="text-xs text-stone-500">{group.memberIds?.length || 0} members</p>
+                  </button>
+                ))
+              )}
+            </div>
           </div>
-        )}
-
-        {groupName && (
-          <div className="flex items-center gap-2 bg-stone-100 rounded-xl px-4 py-2">
-            <span className="text-sm text-stone-500">Posting to</span>
-            <span className="text-sm font-semibold text-stone-800">{groupName}</span>
-            <ChevronDown size={14} className="text-stone-400" />
+        ) : (
+          <div className="flex items-center justify-between gap-2 bg-stone-100 rounded-xl px-4 py-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-stone-500">Posting to</span>
+              <span className="text-sm font-semibold text-stone-800">{groupName}</span>
+            </div>
+            <button
+              onClick={() => {
+                setGroupId("");
+                setGroupName("");
+              }}
+              className="text-xs text-stone-400 hover:text-stone-600"
+            >
+              Change
+            </button>
           </div>
         )}
 

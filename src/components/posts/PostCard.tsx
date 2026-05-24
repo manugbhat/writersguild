@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, MessageCircle, Paperclip, Image as ImageIcon } from "lucide-react";
 import { doc, updateDoc, arrayUnion, arrayRemove, increment, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -18,6 +19,7 @@ interface PostCardProps {
 
 export function PostCard({ post, onUpdate }: PostCardProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [liking, setLiking] = useState(false);
   const [authorPhotoURL, setAuthorPhotoURL] = useState(post.authorPhotoURL);
 
@@ -64,6 +66,12 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
   const excerpt = post.content.replace(/<[^>]*>/g, "").slice(0, 200);
 
+  const handleGroupClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/groups/${post.groupId}`);
+  };
+
   return (
     <Link href={`/post/${post.id}`}>
       <Card hover className="p-4">
@@ -74,13 +82,12 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               <span className="text-sm font-semibold text-stone-800 truncate">{post.authorName}</span>
               <span className="text-xs text-stone-400 flex-shrink-0">{formatRelativeTime(post.createdAt)}</span>
             </div>
-            <Link
-              href={`/groups/${post.groupId}`}
-              className="text-xs text-amber-600 font-medium hover:underline"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={handleGroupClick}
+              className="text-xs text-amber-600 font-medium hover:underline text-left"
             >
               {post.groupName}
-            </Link>
+            </button>
           </div>
         </div>
 
