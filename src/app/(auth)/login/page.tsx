@@ -40,7 +40,8 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const userDoc = await getDoc(doc(db, "users", result.user.uid));
       if (!userDoc.exists()) {
-        router.push("/onboard");
+        // Authenticated via Google but no Firestore doc — needs invite code to complete signup
+        router.push("/signup");
       } else {
         router.push("/feed");
       }

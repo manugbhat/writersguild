@@ -17,7 +17,7 @@ import { formatDate } from "@/lib/utils";
 import type { Post } from "@/lib/types";
 
 export default function ProfilePage() {
-  const { user, signOut, refreshUser } = useAuth();
+  const { user, signOut, refreshUser, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
@@ -25,6 +25,8 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState(user?.bio || "");
   const [saving, setSaving] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
+
+  console.log("[ProfilePage] user:", user, "authLoading:", authLoading);
 
   useEffect(() => {
     if (!user) return;
@@ -84,7 +86,19 @@ export default function ProfilePage() {
     }
   };
 
-  if (!user) return null;
+  if (authLoading) {
+    console.log("[ProfilePage] Auth still loading, showing spinner");
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    console.log("[ProfilePage] No user after loading, returning null");
+    return null;
+  }
 
   return (
     <>

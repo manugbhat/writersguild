@@ -18,11 +18,13 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
+  const isDisabled = disabled || loading;
   return (
     <button
-      disabled={disabled || loading}
+      disabled={isDisabled}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
+        "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2",
+        isDisabled && "opacity-50 cursor-not-allowed",
         {
           "bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500": variant === "primary",
           "bg-stone-100 text-stone-800 hover:bg-stone-200 focus:ring-stone-400 border border-stone-200": variant === "secondary",

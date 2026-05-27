@@ -6,16 +6,23 @@ import { useAuth } from "@/context/AuthContext";
 import { BottomNav } from "@/components/layout/BottomNav";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { firebaseUser, loading } = useAuth();
+  const { firebaseUser, user, loading, signOut } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !firebaseUser) {
+    if (loading) return;
+    if (!firebaseUser) {
       router.replace("/login");
+      return;
     }
-  }, [firebaseUser, loading, router]);
+    // Authenticated via Firebase but no Firestore user doc — they bypassed invite signup
+    if (firebaseUser && !user) {
+      console.warn("[AppLayout] Orphan auth detected — signing out and redirecting to signup");
+      signOut().then(() => router.replace("/signup"));
+    }
+  }, [firebaseUser, user, loading, router, signOut]);
 
-  if (loading) {
+  if (loading || (firebaseUser && !user)) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -26,7 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!firebaseUser) return null;
+  if (!firebaseUser || !user) return null;
 
   return (
     <div className="min-h-screen bg-stone-50">

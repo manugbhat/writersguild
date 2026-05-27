@@ -9,6 +9,8 @@ import { useAuth } from "@/context/AuthContext";
 import { PostCard } from "@/components/posts/PostCard";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
 import { ChevronLeft, Users, PenLine, Copy, Check, Lock } from "lucide-react";
 import type { Group, Post } from "@/lib/types";
 
@@ -22,6 +24,9 @@ export default function GroupDetailPage() {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [joining, setJoining] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [joinError, setJoinError] = useState("");
 
   useEffect(() => {
     getDoc(doc(db, "groups", id)).then((snap) => {
@@ -47,6 +52,11 @@ export default function GroupDetailPage() {
 
   const handleJoin = async () => {
     if (!user || !group) return;
+    setJoinError("");
+    if (joinCode.trim().toUpperCase() !== group.inviteCode) {
+      setJoinError("Invalid invite code for this group.");
+      return;
+    }
     setJoining(true);
     try {
       await updateDoc(doc(db, "groups", group.id), {
@@ -57,6 +67,10 @@ export default function GroupDetailPage() {
       });
       await refreshUser();
       setGroup((g) => g ? { ...g, memberIds: [...g.memberIds, user.uid] } : g);
+      setShowJoinModal(false);
+      setJoinCode("");
+    } catch {
+      setJoinError("Failed to join group. Try again.");
     } finally {
       setJoining(false);
     }
@@ -135,7 +149,7 @@ export default function GroupDetailPage() {
                 )}
               </div>
             ) : (
-              <Button size="sm" onClick={handleJoin} loading={joining}>
+              <Button size="sm" onClick={() => { setJoinError(""); setJoinCode(""); setShowJoinModal(true); }}>
                 Join Group
               </Button>
             )}
@@ -187,6 +201,25 @@ export default function GroupDetailPage() {
           </div>
         )}
       </div>
+
+      <Modal open={showJoinModal} onClose={() => setShowJoinModal(false)} title={`Join ${group.name}`}>
+        <div className="p-6 flex flex-col gap-4">
+          <Input
+            label="Group Invite Code"
+            placeholder="e.g. A1B2C3D4"
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            error={joinError}
+            className="uppercase tracking-widest"
+          />
+          <p className="text-sm text-stone-500">
+            Ask the group admin for the invite code to join this group.
+          </p>
+          <Button onClick={handleJoin} loading={joining} disabled={!joinCode.trim()} size="lg" className="w-full">
+            Join Group
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 }

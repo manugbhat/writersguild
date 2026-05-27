@@ -21,7 +21,7 @@ interface CommentWithPhoto extends Comment {
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<CommentWithPhoto[]>([]);
@@ -31,6 +31,8 @@ export default function PostDetailPage() {
   const [liking, setLiking] = useState(false);
   const [authorPhotoURL, setAuthorPhotoURL] = useState<string | undefined>();
   const commentRef = useRef<HTMLInputElement>(null);
+
+  console.log("[PostDetailPage] id:", id, "user:", user, "authLoading:", authLoading, "post:", post, "loading:", loading);
 
   useEffect(() => {
     getDoc(doc(db, "posts", id)).then((snap) => {
@@ -143,7 +145,19 @@ export default function PostDetailPage() {
     }
   };
 
+  if (authLoading) {
+    console.log("[PostDetailPage] Auth still loading, showing spinner");
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  console.log("[PostDetailPage] Auth loaded, user:", user);
+
   if (loading) {
+    console.log("[PostDetailPage] Still loading post data, showing spinner");
     return (
       <div className="flex items-center justify-center py-20">
         <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin" />
@@ -152,8 +166,11 @@ export default function PostDetailPage() {
   }
 
   if (!post) {
+    console.log("[PostDetailPage] No post found");
     return <div className="flex justify-center py-20 text-stone-500">Post not found.</div>;
   }
+
+  console.log("[PostDetailPage] Rendering post:", post.id);
 
   return (
     <div className="flex flex-col">

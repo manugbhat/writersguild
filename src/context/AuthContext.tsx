@@ -32,10 +32,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async (fbUser: FirebaseUser) => {
+    console.log("[AuthContext] fetchUser called for uid:", fbUser.uid);
     const docRef = doc(db, "users", fbUser.uid);
     const snap = await getDoc(docRef);
     if (snap.exists()) {
+      console.log("[AuthContext] User doc found, setting user");
       setUser({ uid: fbUser.uid, ...snap.data() } as User);
+    } else {
+      console.warn("[AuthContext] User doc DOES NOT EXIST for uid:", fbUser.uid, "— user must complete invite-based signup");
+      setUser(null);
     }
   };
 
@@ -44,7 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    console.log("[AuthContext] Setting up onAuthStateChanged listener");
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      console.log("[AuthContext] onAuthStateChanged fired, fbUser:", fbUser?.uid || "null");
+      setLoading(true);
       setFirebaseUser(fbUser);
       if (fbUser) {
         await fetchUser(fbUser);
@@ -52,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
       setLoading(false);
+      console.log("[AuthContext] Loading complete");
     });
     return unsub;
   }, []);
