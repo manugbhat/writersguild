@@ -3,9 +3,8 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { BottomNav } from "@/components/layout/BottomNav";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function ReviewLayout({ children }: { children: React.ReactNode }) {
   const { firebaseUser, user, loading, signOut } = useAuth();
   const router = useRouter();
 
@@ -15,9 +14,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       router.replace("/login");
       return;
     }
-    // Authenticated via Firebase but no Firestore user doc — they bypassed invite signup
     if (firebaseUser && !user) {
-      console.warn("[AppLayout] Orphan auth detected — signing out and redirecting to signup");
       signOut().then(() => router.replace("/signup"));
     }
   }, [firebaseUser, user, loading, router, signOut]);
@@ -35,10 +32,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!firebaseUser || !user) return null;
 
-  return (
-    <div className="min-h-screen bg-stone-50">
-      <main className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto pb-24">{children}</main>
-      <BottomNav />
-    </div>
-  );
+  return <div className="min-h-screen bg-white">{children}</div>;
 }

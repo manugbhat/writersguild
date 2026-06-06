@@ -106,7 +106,7 @@ export default function GroupDetailPage() {
 
   return (
     <>
-      <div className={`bg-gradient-to-r ${group.coverColor} h-32 relative`}>
+      <div className={`bg-gradient-to-r ${group.coverColor} h-16 relative`}>
         <button
           onClick={() => router.back()}
           className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm rounded-full p-2 text-white"
@@ -115,7 +115,7 @@ export default function GroupDetailPage() {
         </button>
       </div>
 
-      <div className="px-4 -mt-6">
+      <div className="px-4 mt-3">
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-4 mb-4">
           <div className="flex items-start justify-between gap-3">
             <div>

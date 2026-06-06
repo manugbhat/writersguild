@@ -11,7 +11,8 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { ChevronLeft, Heart, Send, Paperclip, Download } from "lucide-react";
+import { ChevronLeft, Heart, Send, Paperclip, Download, MessageSquareText } from "lucide-react";
+import Link from "next/link";
 import { formatRelativeTime, formatDate, getFileIcon } from "@/lib/utils";
 import type { Post, Comment } from "@/lib/types";
 
@@ -175,7 +176,7 @@ export default function PostDetailPage() {
   return (
     <div className="flex flex-col">
       <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-stone-100 px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
+        <div className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto flex items-center gap-3">
           <button
             onClick={() => router.back()}
             className="p-1.5 rounded-full text-stone-500 hover:bg-stone-100 transition"
@@ -188,7 +189,7 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      <div className="px-4 py-5 max-w-lg mx-auto w-full">
+      <div className="px-4 py-5 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto w-full">
         <div className="flex items-start gap-3 mb-4">
           <Avatar name={post.authorName} photoURL={authorPhotoURL} size="md" />
           <div>
@@ -217,22 +218,38 @@ export default function PostDetailPage() {
         {post.attachments && post.attachments.length > 0 && (
           <div className="mt-5 flex flex-col gap-2">
             <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Attachments</p>
-            {post.attachments.map((att, i) => (
-              <a
-                key={i}
-                href={att.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 hover:bg-stone-100 transition"
-              >
-                <span className="text-2xl">{getFileIcon(att.name)}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-stone-800 truncate">{att.name}</p>
-                  <p className="text-xs text-stone-400">{(att.size / 1024).toFixed(1)} KB</p>
+            {post.attachments.map((att, i) => {
+              const reviewable = /\.docx?$/i.test(att.name);
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3"
+                >
+                  <span className="text-2xl">{getFileIcon(att.name)}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-stone-800 truncate">{att.name}</p>
+                    <p className="text-xs text-stone-400">{(att.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                  {reviewable && (
+                    <Link
+                      href={`/review/${post.id}?file=${i}`}
+                      className="flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition"
+                    >
+                      <MessageSquareText size={14} /> Review
+                    </Link>
+                  )}
+                  <a
+                    href={att.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 text-stone-400 hover:text-stone-600 transition"
+                    title="Download"
+                  >
+                    <Download size={16} />
+                  </a>
                 </div>
-                <Download size={16} className="text-stone-400" />
-              </a>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -255,7 +272,7 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      <div className="px-4 pb-4 max-w-lg mx-auto w-full">
+      <div className="px-4 pb-4 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto w-full">
         <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">Comments</p>
         <div className="flex flex-col gap-4 mb-4">
           {comments.length === 0 ? (

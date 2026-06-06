@@ -5,8 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: Date | { seconds: number }): string {
-  const d = date instanceof Date ? date : new Date(date.seconds * 1000);
+type FirestoreDate = Date | { seconds: number } | null | undefined;
+
+function toDate(date: FirestoreDate): Date {
+  if (date instanceof Date) return date;
+  if (date && typeof date.seconds === "number") return new Date(date.seconds * 1000);
+  // Pending serverTimestamp() resolves to null locally — treat as "now".
+  return new Date();
+}
+
+export function formatDate(date: FirestoreDate): string {
+  const d = toDate(date);
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -14,8 +23,8 @@ export function formatDate(date: Date | { seconds: number }): string {
   });
 }
 
-export function formatRelativeTime(date: Date | { seconds: number }): string {
-  const d = date instanceof Date ? date : new Date(date.seconds * 1000);
+export function formatRelativeTime(date: FirestoreDate): string {
+  const d = toDate(date);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
   const minutes = Math.floor(diff / 60000);

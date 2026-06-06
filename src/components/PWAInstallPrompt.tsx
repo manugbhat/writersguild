@@ -37,12 +37,9 @@ export function PWAInstallPrompt() {
     if (!deferredPrompt) return;
 
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === "accepted") {
-      setShowPrompt(false);
-    }
-    
+    await deferredPrompt.userChoice;
+
+    setShowPrompt(false);
     setDeferredPrompt(null);
   };
 
@@ -50,13 +47,10 @@ export function PWAInstallPrompt() {
     setShowPrompt(false);
   };
 
-  // Debug: force show for testing on localhost
-  const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
-
   // Prevent hydration mismatch - render nothing until mounted
   if (!mounted) return null;
 
-  if (!showPrompt && !isLocalhost) return null;
+  if (!showPrompt) return null;
 
   return (
     <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 animate-in slide-in-from-bottom-4 duration-300">

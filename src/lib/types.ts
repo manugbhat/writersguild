@@ -56,6 +56,27 @@ export interface Comment {
   createdAt: { seconds: number } | Date;
 }
 
+export type DocCommentStatus = "open" | "approved" | "invalid";
+
+export interface DocComment {
+  id: string;
+  postId: string;
+  fileIndex: number;
+  fileName: string;
+  quote: string;
+  startOffset: number;
+  endOffset: number;
+  content: string;
+  authorId: string;
+  authorName: string;
+  authorPhotoURL?: string;
+  status: DocCommentStatus;
+  resolvedById?: string;
+  resolvedByName?: string;
+  resolvedAt?: { seconds: number } | Date | null;
+  createdAt: { seconds: number } | Date;
+}
+
 export interface InviteCode {
   code: string;
   used: boolean;

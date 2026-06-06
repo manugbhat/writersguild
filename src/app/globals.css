@@ -19,6 +19,18 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Scale typography up on tablet/laptop (mobile stays at 16px base) */
+@media (min-width: 768px) {
+  html {
+    font-size: 20px;
+  }
+}
+@media (min-width: 1024px) {
+  html {
+    font-size: 28px;
+  }
+}
+
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -78,4 +90,9 @@ body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.wg-doc {
+  font-family: var(--font-geist-sans), "Noto Sans", "Noto Sans Devanagari",
+               "Noto Sans Tamil", "Noto Sans Telugu", sans-serif;
 }

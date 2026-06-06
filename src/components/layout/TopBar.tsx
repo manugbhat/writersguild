@@ -18,7 +18,7 @@ export function TopBar({ title, subtitle, right, className }: TopBarProps) {
         className
       )}
     >
-      <div className="max-w-lg mx-auto flex items-center justify-between">
+      <div className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-stone-900">{title}</h1>
           {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}

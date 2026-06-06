@@ -18,7 +18,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-100 safe-bottom">
-      <div className="max-w-lg mx-auto flex items-center justify-around">
+      <div className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto flex items-center justify-around">
         {navItems.map(({ href, icon: Icon, label }) => {
           const isActive = pathname === href || pathname.startsWith(href + "/");
           const isWrite = href === "/write";
